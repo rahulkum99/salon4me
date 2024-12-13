@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django_app
+    command: >
+      gunicorn salon.wsgi:application
+      --bind 0.0.0.0:8000
+      --workers 3
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+
+
+
+
