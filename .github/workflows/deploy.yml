@@ -31,13 +31,13 @@ jobs:
       run: |
         python manage.py test
 
-    # Deploy to EC2
-    - name: Deploy to EC2
-      uses: appleboy/ssh-action@v0.1.11  # Updated version
+    # Set up SSH and deploy to EC2
+    - name: Set up SSH and deploy to EC2
+      uses: shivammathur/setup-ssh@v1
       with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_KEY }}
+        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+        remote-username: ubuntu
+        remote-host: ${{ secrets.EC2_HOST }}
         script: |
           # Navigate to the app directory or clone if not exists
           if [ ! -d "/app" ]; then
