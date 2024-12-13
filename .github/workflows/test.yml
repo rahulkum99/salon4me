@@ -1,0 +1,81 @@
+name: Deploy Django to AWS EC2
+
+on:
+  push:
+    branches:
+      - master  # Trigger the workflow on pushes to the master branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Python environment
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    # Step 3: Install Python dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Step 4: Run Django tests
+    - name: Run tests
+      run: |
+        python manage.py test
+
+    # Step 5: Deploy to AWS EC2
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          # Navigate to the app directory or clone the repo
+          if [ ! -d "/app" ]; then
+            git clone https://github.com/rahulkum99/salon4me.git /app
+          else
+            cd /app && git pull origin master
+          fi
+
+          # Set environment variables
+          echo "DEBUG=True" > /app/.env
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> /app/.env
+          echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> /app/.env
+          echo "DATABASE_USER=${{ secrets.DATABASE_USER }}" >> /app/.env
+          echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> /app/.env
+          echo "DATABASE_HOST=${{ secrets.DATABASE_HOST }}" >> /app/.env
+          echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> /app/.env
+          echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" >> /app/.env
+          echo "GOOGLE_OAUTH_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}" >> /app/.env
+          echo "GOOGLE_OAUTH_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}" >> /app/.env
+          echo "GOOGLE_OAUTH_CALLBACK_URL=${{ secrets.GOOGLE_OAUTH_CALLBACK_URL }}" >> /app/.env
+          echo "FACEBOOK_OAUTH_CLIENT_ID=${{ secrets.FACEBOOK_OAUTH_CLIENT_ID }}" >> /app/.env
+          echo "FACEBOOK_OAUTH_CLIENT_SECRET=${{ secrets.FACEBOOK_OAUTH_CLIENT_SECRET }}" >> /app/.env
+          echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> /app/.env
+
+          # Navigate to the app directory
+          cd /app
+
+          # Install Docker if not already installed
+          if ! [ -x "$(command -v docker)" ]; then
+            sudo apt-get update && sudo apt-get install -y docker.io
+          fi
+
+          # Build and run Docker container
+          docker build -t django-app .
+          docker stop django-container || true
+          docker rm django-container || true
+          docker run -d --name django-container -p 8000:8000 django-app
+
+    # Step 6: Notify on deployment success
+    - name: Notify success
+      run: echo "Deployment to EC2 instance was successful!"
