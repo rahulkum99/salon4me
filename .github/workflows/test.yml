@@ -45,7 +45,7 @@ jobs:
           else
             cd /app && git pull origin master
           fi
-
+          cat > /app/.env <<EOF
           # Set environment variables
           echo "DEBUG=True" > /app/.env
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> /app/.env
@@ -61,7 +61,7 @@ jobs:
           echo "FACEBOOK_OAUTH_CLIENT_ID=${{ secrets.FACEBOOK_OAUTH_CLIENT_ID }}" >> /app/.env
           echo "FACEBOOK_OAUTH_CLIENT_SECRET=${{ secrets.FACEBOOK_OAUTH_CLIENT_SECRET }}" >> /app/.env
           echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> /app/.env
-
+          EOF
           # Navigate to the app directory
           cd /app
 
