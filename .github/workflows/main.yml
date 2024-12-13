@@ -41,7 +41,7 @@ jobs:
         script: |
           # Navigate to the app directory or clone if not exists
           if [ ! -d "/app" ]; then
-            git clone https://github.com/<your-username>/<your-repo>.git /app
+            git clone https://github.com/rahulkum99/salon4me.git /app
           else
             cd /app && git pull origin main
           fi
