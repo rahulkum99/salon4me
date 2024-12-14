@@ -1,10 +1,23 @@
-- name: Deploy to EC2
-  uses: appleboy/ssh-action@v0.1.0
-  with:
-    host: ${{ secrets.EC2_HOST }}  # Ensure EC2_HOST is set in GitHub Secrets as a string
-    username: ubuntu               # Ensure the correct username for your EC2 instance
-    key: ${{ secrets.EC2_SSH_KEY }}  # The private key should be set as a string secret in GitHub
-    script: |
-      echo "Connected to EC2 instance successfully"
-      # Add your deployment commands here
+name: Deploy to AWS EC2
 
+on:
+  push:
+    branches:
+      - master  # Trigger this workflow on pushes to the master branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # This will run on the latest Ubuntu runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}  # Ensure that the private key is correctly stored as a single string in GitHub Secrets
+          script: |
+            echo "Connected to EC2 instance successfully"
+            
