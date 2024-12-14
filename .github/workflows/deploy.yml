@@ -99,16 +99,16 @@ jobs:
             # Build and run Docker container with environment variables
             cd /app
             echo "Building Docker image..."
-            docker build -t django-app .
+            sudo docker build -t django-app .
 
             echo "Stopping existing container if it exists..."
-            docker stop django-container || true
+            sudo docker stop django-container || true
 
             echo "Removing existing container if it exists..."
-            docker rm django-container || true
+            sudo docker rm django-container || true
 
             echo "Running new Docker container with .env file..."
-            docker run -d --name django-container --env-file /app/.env -p 8000:8000 django-app
+            sudo docker run -d --name django-container --env-file /app/.env -p 8000:8000 django-app
 
             echo "Deployment completed successfully on EC2!"
 
