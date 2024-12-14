@@ -72,7 +72,7 @@ jobs:
               git clone https://github.com/rahulkum99/salon4me.git /app
             else
               echo "Pulling latest changes from the repository..."
-              cd /app && git pull origin main
+              cd /app && git pull origin master
             fi
 
             # Create or update the .env file with environment variables
