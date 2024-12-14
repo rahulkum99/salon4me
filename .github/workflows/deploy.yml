@@ -26,17 +26,33 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4: Run tests
+      # Step 4: Set environment variables before tests
+      - name: Set environment variables
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        run: echo "Environment variables set for testing."
+
+      # Step 5: Run tests
       - name: Run tests
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DEBUG: ${{ secrets.DEBUG }}
+          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+          DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+          DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+          DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+          DATABASE_USER: ${{ secrets.DATABASE_USER }}
+          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
         run: |
           python manage.py test
 
-      # Step 5: Notify that tests passed
+      # Step 6: Notify if tests passed
       - name: Notify Tests Passed
         run: echo "Tests passed successfully!"
-      # Step 6: Deploy to EC2 with environment variables
+
+      # Step 7: Deploy to EC2 with environment variables
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v0.1.0  # Updated to the latest stable version
+        uses: appleboy/ssh-action@v0.1.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
@@ -56,6 +72,7 @@ jobs:
             # Create or update the .env file with environment variables
             echo "Creating .env file with environment variables..."
             cat <<EOT > /app/.env
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
             DEBUG=${{ secrets.DEBUG }}
             ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}
             DATABASE_HOST=${{ secrets.DATABASE_HOST }}
@@ -88,6 +105,6 @@ jobs:
 
             echo "Deployment completed successfully on EC2!"
 
-      # Step 7: Notify deployment success
+      # Step 8: Notify deployment success
       - name: Notify Deployment Success
         run: echo "Deployment to EC2 instance with environment variables was successful!"
