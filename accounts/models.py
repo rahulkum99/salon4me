@@ -51,7 +51,7 @@ class OTP(BaseModel):
     created_at = models.DateTimeField(default=timezone.now)
     is_active = models.BooleanField(default=True)
 
-    def _str_(self):
+    def __str__(self):  # Correctly implemented __str__ method
         return f"OTP for {self.user.phone_number}"
 
 
@@ -73,7 +73,7 @@ class Profile(BaseModel):
 
 
     def __str__(self):
-        return f"{self.user.username}'s Profile"
+        return f"{self.user}'s Profile"
 
 
 @receiver(post_save, sender=CustomUser)
