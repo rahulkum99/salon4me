@@ -58,14 +58,14 @@ jobs:
 
       # Step 7: Deploy to EC2 with environment variables
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v0.1.0
+        uses: webfactory/ssh-agent@v0.9.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             echo "Starting deployment process on EC2..."
-
+            ssh -v -i ${{ secrets.EC2_SSH_KEY }} ubuntu@${{ secrets.EC2_HOST }} "echo 'SSH connection established.'"
             # Clone or update the repository
             if [ ! -d "/app" ]; then
               echo "Cloning the repository..."
