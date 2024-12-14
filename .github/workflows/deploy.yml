@@ -10,50 +10,84 @@ jobs:
     runs-on: ubuntu-latest  # This will run on the latest Ubuntu runner
 
     steps:
-    # Checkout the code
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # Set up Python
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-    # Install dependencies
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    # Run tests
-    - name: Run tests
-      run: |
-        python manage.py test
-    - name: Notify Deployment
-      run: echo "Run good still here"
-    # Deploy to EC2
-    - name: Deploy to EC2
-      uses: appleboy/ssh-action@v0.1.0  # Updated to the latest stable version
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          # Navigate to the app directory or clone if not exists
-          if [ ! -d "/app" ]; then
-            git clone https://github.com/rahulkum99/salon4me.git /app
-          else
-            cd /app && git pull origin main
-          fi
+      # Step 4: Run tests
+      - name: Run tests
+        run: |
+          python manage.py test
 
-          # Build and run Docker container
-          cd /app
-          docker build -t django-app .
-          docker stop django-container || true
-          docker rm django-container || true
-          docker run -d --name django-container -p 8000:8000 django-app
+      # Step 5: Notify that tests passed
+      - name: Notify Tests Passed
+        run: echo "Tests passed successfully!"
+      # Step 6: Deploy to EC2 with environment variables
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.0  # Updated to the latest stable version
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "Starting deployment process on EC2..."
 
-    # Optional: Notify success
-    - name: Notify Deployment
-      run: echo "Deployment to EC2 instance successful!"
+            # Clone or update the repository
+            if [ ! -d "/app" ]; then
+              echo "Cloning the repository..."
+              git clone https://github.com/rahulkum99/salon4me.git /app
+            else
+              echo "Pulling latest changes from the repository..."
+              cd /app && git pull origin main
+            fi
+
+            # Create or update the .env file with environment variables
+            echo "Creating .env file with environment variables..."
+            cat <<EOT > /app/.env
+            DEBUG=${{ secrets.DEBUG }}
+            ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}
+            DATABASE_HOST=${{ secrets.DATABASE_HOST }}
+            DATABASE_PORT=${{ secrets.DATABASE_PORT }}
+            DATABASE_NAME=${{ secrets.DATABASE_NAME }}
+            DATABASE_USER=${{ secrets.DATABASE_USER }}
+            DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+            GOOGLE_OAUTH_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+            GOOGLE_OAUTH_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+            FACEBOOK_OAUTH_CLIENT_ID=${{ secrets.FACEBOOK_OAUTH_CLIENT_ID }}
+            FACEBOOK_OAUTH_CLIENT_SECRET=${{ secrets.FACEBOOK_OAUTH_CLIENT_SECRET }}
+            GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}
+            EOT
+
+            echo ".env file created successfully."
+
+            # Build and run Docker container with environment variables
+            cd /app
+            echo "Building Docker image..."
+            docker build -t django-app .
+
+            echo "Stopping existing container if it exists..."
+            docker stop django-container || true
+
+            echo "Removing existing container if it exists..."
+            docker rm django-container || true
+
+            echo "Running new Docker container with .env file..."
+            docker run -d --name django-container --env-file /app/.env -p 8000:8000 django-app
+
+            echo "Deployment completed successfully on EC2!"
+
+      # Step 7: Notify deployment success
+      - name: Notify Deployment Success
+        run: echo "Deployment to EC2 instance with environment variables was successful!"
