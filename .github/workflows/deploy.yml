@@ -63,6 +63,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
+          debug: true
           script: |
             echo "Starting deployment process on EC2..."
             echo "Checking EC2 connection..."
