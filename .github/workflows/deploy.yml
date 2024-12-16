@@ -57,17 +57,17 @@ jobs:
         run: echo "Tests passed successfully!"
 
       # Step 7: Deploy to EC2 with environment variables
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v0.1.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          debug: true
-          script: |
-            echo "Starting deployment process on EC2..."
-            echo "Checking EC2 connection..."
-            echo "SSH connection established successfully."
+jobs:
+  deploy:
+    runs-on: self-hosted  # Specify your self-hosted runner
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run deployment script
+        run: |
+          echo "Deploying application..."
             # Clone or update the repository
             if [ ! -d "/app" ]; then
               echo "Cloning the repository..."
