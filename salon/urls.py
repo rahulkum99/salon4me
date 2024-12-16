@@ -17,8 +17,22 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+class HealthCheckView(APIView):
+    """
+    Simple health check endpoint to ensure the app is running properly.
+    """
+    def get(self, request, *args, **kwargs):
+        # You can add additional logic here, like checking database connections, etc.
+        return Response({"status": "ok"}, status=status.HTTP_200_OK)
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', HealthCheckView.as_view(), name='health_check'),
     path('auth/',include('accounts.urls')),
     path('service/',include('service.urls')),
 
