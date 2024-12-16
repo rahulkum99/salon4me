@@ -73,8 +73,24 @@ jobs:
               echo "Cloning the repository..."
               sudo git clone https://github.com/rahulkum99/salon4me.git /app
             else
+              echo "Checking for uncommitted changes..."
+              cd /app
+              sudo git fetch origin
+              
+              # Check for uncommitted changes
+              if [ -n "$(sudo git status --porcelain)" ]; then
+                echo "Uncommitted changes found. Stashing them before pulling latest changes..."
+                sudo git stash
+              fi
+
               echo "Pulling latest changes from the repository..."
-              cd /app && sudo git pull origin master
+              sudo git pull origin master
+
+              # If there were stashed changes, apply them
+              if sudo git stash list | grep -q 'stash@{0}'; then
+                echo "Reapplying stashed changes..."
+                sudo git stash pop
+              fi
             fi
 
             # Create or update the .env file with environment variables
