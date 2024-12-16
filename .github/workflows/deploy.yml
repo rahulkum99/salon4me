@@ -71,10 +71,10 @@ jobs:
             # Clone or update the repository
             if [ ! -d "/app" ]; then
               echo "Cloning the repository..."
-              git clone https://github.com/rahulkum99/salon4me.git /app
+              sudo git clone https://github.com/rahulkum99/salon4me.git /app
             else
               echo "Pulling latest changes from the repository..."
-              cd /app && git pull origin master
+              cd /app && sudo git pull origin master
             fi
 
             # Create or update the .env file with environment variables
