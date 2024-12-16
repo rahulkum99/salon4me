@@ -26,6 +26,7 @@ COPY requirements.txt /app/
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN python manage.py collectstatic --noinput
 # Copy the Django project files to the container
 COPY . /app/
 
