@@ -100,18 +100,10 @@ jobs:
 
             # Build and run Docker container with environment variables
             cd /app
-            echo "Building Docker image..."
-            sudo docker build -t django-app .
 
-            echo "Stopping existing container if it exists..."
-            sudo docker stop django-container || true
-
-            echo "Removing existing container if it exists..."
-            sudo docker rm django-container || true
-
-            echo "Running new Docker container with .env file..."
-            sudo docker run -d --name django-container --env-file /app/.env -p 8000:8000 django-app
-
+            echo "Starting Docker Compose deployment..."
+            sudo docker-compose down || true  # Stop and remove any existing services
+            sudo docker-compose up -d --build  # Build and start services in detached mode
             echo "Deployment completed successfully on EC2!"
 
       # Step 8: Notify deployment success
